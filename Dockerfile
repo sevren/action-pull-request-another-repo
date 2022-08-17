@@ -1,16 +1,11 @@
-FROM golang:1.16-alpine3.13
+FROM alpine/git
 
-RUN apk update && \
-    apk upgrade && \
-    apk add build-base && \
-    apk add git
 
-RUN curl -Lo /tmp/ghlinux.tar.gz https://github.com/cli/cli/releases/download/v2.14.4/gh_2.14.4_linux_amd64.tar.gz \
-  && tar --strip-components=1 -xf /tmp/ghlinux.tar.gz \
-  && rm /tmp/ghlinux.tar.gz \
-  && chmod a+x ./bin/gh \
-  && mv ./bin/gh /usr/local/bin/
+RUN wget -q  https://api.github.com/repos/cli/cli/releases/latest \
+    && wget -q $(cat latest | grep linux_amd64.tar.gz | grep browser_download_url | grep -v .asc | cut -d '"' -f 4) \
+    && tar -xvzf gh*.tar.gz \
+    && mv gh*/bin/gh /usr/local/bin/ \
+    && rm -fr *
 
 ADD entrypoint.sh /entrypoint.sh
-
 ENTRYPOINT [ "/entrypoint.sh" ]
